@@ -12,22 +12,29 @@ import { useAuth, useAuthDispatch } from "../contexts/AuthContext";
 import axios from "axios";
 
 export async function action({ request }) {
-  let formData = await request.formData();
-  const type = formData.get("type");
-  const url =
-    type === "register"
-      ? "http://localhost:5000/api/v1/auth/register"
-      : "http://localhost:5000/api/v1/auth/login";
-  const { data } = await axios.post(url, {
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-  const {accessToken, refreshToken } = data;
-  return { accessToken, refreshToken };
+  try {
+    let formData = await request.formData();
+    const type = formData.get("type");
+    const url =
+      type === "register"
+        ? "http://localhost:5000/api/v1/auth/register"
+        : "http://localhost:5000/api/v1/auth/login";
+    const { data } = await axios.post(url, {
+      email: formData.get("email"),
+      password: formData.get("password"),
+    });
+    const { accessToken, refreshToken } = data;
+    return { tokens: {accessToken, refreshToken}, error: null };
+  } catch (error) {
+    return {
+      error: error.response.data.message || error.message,
+      tokens: null
+    }
+  }
 }
 
 export function LoginPage() {
-  const tokens = useActionData();
+  const actionData = useActionData();
   const navigate = useNavigate();
   const authState = useAuth();
   const authDispatch = useAuthDispatch();
@@ -39,11 +46,11 @@ export function LoginPage() {
   }, [authState]);
 
   useEffect(() => {
-    if (tokens) {
-      authDispatch({ type: "login", tokens });
+    if (actionData?.tokens) {
+      authDispatch({ type: "login", tokens: actionData.tokens });
       navigate("/");
     }
-  }, [tokens]);
+  }, [actionData]);
 
   return (
     <div className="wrapper">
@@ -53,6 +60,7 @@ export function LoginPage() {
         <div>
           <Form method="post">
             <h1>Login</h1>
+            {actionData?.error && <div className="alert">{actionData?.error}</div> }
             <fieldset>
               <label htmlFor="login">
                 <input
