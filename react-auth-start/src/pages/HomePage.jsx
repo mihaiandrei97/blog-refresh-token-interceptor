@@ -21,7 +21,7 @@ export function HomePage() {
           setProfile(data);
         }).catch(error => {
           if(error.response.data.message === 'TokenExpiredError'){
-            authDispatch({type:'logout'})
+            //authDispatch({type:'logout'})
           }
         });
     
