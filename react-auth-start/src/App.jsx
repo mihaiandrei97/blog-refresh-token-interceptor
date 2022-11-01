@@ -1,29 +1,32 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
 import "./App.css";
 import { createBrowserRouter, RouterProvider, Route } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
-import { action as loginAction, LoginPage } from "./pages/LoginPage";
-import { AuthProvider } from "./contexts/AuthContext";
+import {
+  action as loginAction,
+  LoginPage,
+} from "./pages/LoginPage";
+import { Root } from "./layouts/Root";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomePage />,
-  },
-  {
-    path: "/login",
-    element: <LoginPage />,
-    action: loginAction
+    element: <Root />,
+    children: [
+      {
+        path: "/",
+        element: <HomePage />,
+      },
+      {
+        path: "/login",
+        element: <LoginPage />,
+        action: loginAction,
+      },
+    ],
   },
 ]);
 
 function App() {
-  return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

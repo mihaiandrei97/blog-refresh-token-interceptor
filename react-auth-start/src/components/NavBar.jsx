@@ -1,11 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth, useAuthDispatch } from "../contexts/AuthContext";
+import { useAuthStore } from "../stores/authStore";
 
 export function NavBar() {
-  const authState = useAuth();
-  const authDispatch = useAuthDispatch();
-  console.log(authState);
+  const logout = useAuthStore((state) => state.logout);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn());
   return (
     <nav className="container-fluid">
       <ul>
@@ -17,14 +16,14 @@ export function NavBar() {
       </ul>
       <ul>
         <li>
-          {!authState.loggedIn ? (
+          {!isLoggedIn ? (
             <Link to="/login" className="contrast">
               <strong>Login</strong>
             </Link>
           ) : (
             <button
               className="contrast"
-              onClick={() => authDispatch({ type: "logout" })}
+              onClick={() => logout()}
             >
               <strong>Logout</strong>
             </button>
