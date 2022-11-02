@@ -1,12 +1,14 @@
 import axios from "axios";
 
 let failedQueue = [];
+let isRefreshing = false;
 
 const processQueue = (error) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
+      console.log("sa facut rezolve la promise");
       prom.resolve();
     }
   });
@@ -20,21 +22,21 @@ export function createAxiosClient({
   getCurrentRefreshToken,
   refreshTokenUrl,
   logout,
-  setRefreshedTokens,
+  setRefreshTokens,
 }) {
   const client = axios.create(options);
 
   client.interceptors.request.use(
     (config) => {
-      if (config.authorization !== false) {
-        const token = getCurrentAccessToken();
-        if (token) {
-          config.headers.Authorization = "Bearer " + token;
-        }
+      const token = getCurrentAccessToken();
+      console.log("intra iar oare in request?", Object.keys(config.headers));
+      if (token) {
+        config.headers['Authorization'] = 'Bearer ' + token
       }
       return config;
     },
     (error) => {
+      console.log('aici intra?')
       return Promise.reject(error);
     }
   );
@@ -86,15 +88,17 @@ export function createAxiosClient({
               accessToken: res.data?.accessToken,
               refreshToken: res.data?.refreshToken,
             };
-            setRefreshedTokens(tokens)
-            return client(originalRequest);
+            setRefreshTokens(tokens);
+            processQueue(null);
+            console.log(originalRequest)
+            originalRequest.headers = JSON.parse(JSON.stringify(originalRequest.headers || {}))
+            return client(originalRequest)
           }, handleError)
           .finally(() => {
             isRefreshing = false;
           });
       }
 
-      console.log("intra aici", error.response?.status, error.response);
       if (
         error.response?.status === 401 &&
         error.response?.data?.message === "TokenExpiredError"
@@ -102,12 +106,12 @@ export function createAxiosClient({
         return handleError(error);
       }
       // Invalid token scenario
-      if (
-        (error.response?.status === 401 || error.response?.status === 400) &&
-        INVALID_TOKEN_CODE_ERRORS.includes(error.response?.data?.code)
-      ) {
-        return handleError(error);
-      }
+      // if (
+      //   (error.response?.status === 401 || error.response?.status === 400) &&
+      //   INVALID_TOKEN_CODE_ERRORS.includes(error.response?.data?.code)
+      // ) {
+      //   return handleError(error);
+      // }
 
       // Any status codes that falls outside the range of 2xx cause this function to trigger
       // Do something with response error
@@ -115,5 +119,5 @@ export function createAxiosClient({
     }
   );
 
-  return client
+  return client;
 }
