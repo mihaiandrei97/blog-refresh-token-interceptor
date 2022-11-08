@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Form, useActionData, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuthStore } from "../stores/authStore";
+import { login, register } from "../../services/services";
 
 export async function action({ request }) {
   try {
@@ -9,19 +10,12 @@ export async function action({ request }) {
     const type = formData.get("type");
     const email = formData.get("email");
     const password = formData.get("password");
-    const url =
-      type === "register"
-        ? "http://localhost:5000/api/v1/auth/register"
-        : "http://localhost:5000/api/v1/auth/login";
-    const { data } = await axios.post(url, {
-      email,
-      password,
-    });
-    const { accessToken, refreshToken } = data;
+    const response = type === "register" ? await register({email, password}) : await login({email, password});
+    const { accessToken, refreshToken } = response.data;
     return { tokens: { accessToken, refreshToken }, error: null };
   } catch (error) {
     return {
-      error: error.response.data.message || error.message,
+      error: error?.response?.data?.message || error.message,
       tokens: null,
     };
   }
