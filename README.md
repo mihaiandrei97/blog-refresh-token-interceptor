@@ -1,6 +1,6 @@
 # JWT Authentication using Axios interceptors 
 
-You can check the blog post [here](https://dev.to/mihaiandrei97/jwt-authentication-using-axios-interceptors-55be).
+You can check the blog post [here](https://mihai-andrei.com/blog/jwt-authentication-using-axios-interceptors/).
 
 ## Setup
 
